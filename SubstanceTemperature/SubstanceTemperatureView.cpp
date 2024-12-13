@@ -130,6 +130,25 @@ void CSubstanceTemperatureView::OnDraw(CDC* pDC)
             pDC->LineTo(xTickEnd, y);
         }
 
+        CRect equationRect(m_plotRect.left + 100, m_plotRect.bottom + 10, m_plotRect.right - 100, m_plotRect.bottom + 50);
+        CRect alphaBetaRect(m_plotRect.left + 100, m_plotRect.bottom + 60, m_plotRect.right - 100, m_plotRect.bottom + 100);
+
+        CString equation;
+        CString alphaBeta;
+        float alpha, beta;
+        regression.getAlpha(alpha);
+        regression.getBeta(beta);
+
+        equation.Format(_T("Regression: y = %.2f * x + (%.2f)"), alpha, beta);
+        pDC->SetTextColor(RGB(0, 0, 0));
+        pDC->SetBkMode(TRANSPARENT);
+        pDC->DrawText(equation, &equationRect, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+
+        alphaBeta.Format(_T("Alpha: %.2f, Beta: %.2f"), alpha, beta);
+        pDC->SetTextColor(RGB(0, 0, 0));
+        pDC->SetBkMode(TRANSPARENT);
+        pDC->DrawText(alphaBeta, &alphaBetaRect, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+
         pDC->SelectObject(pOldPen);
     }
 }
@@ -318,6 +337,12 @@ void CSubstanceTemperatureView::OnAddSubstance()
     RefreshSubstanceTable();
 
     InvalidateRect(m_plotRect, FALSE);
+
+    CRect equationRect(m_plotRect.left + 100, m_plotRect.bottom + 10, m_plotRect.right - 100, m_plotRect.bottom + 50);
+    CRect alphaBetaRect(m_plotRect.left + 100, m_plotRect.bottom + 60, m_plotRect.right - 100, m_plotRect.bottom + 100);
+
+    InvalidateRect(equationRect, TRUE);
+    InvalidateRect(alphaBetaRect, TRUE);
 
     UpdateWindow();
 }
