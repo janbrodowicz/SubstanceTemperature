@@ -12,10 +12,10 @@
 ## App description
 
 This apps allows the user to input:
-	1. measuring intrument id
-	2. measured substance name
-	3. nominal melting temperature for the substance 
-	4. measured melting temperaturę for the substance
+* measuring intrument id
+* measured substance name
+* nominal melting temperature for the substance 
+* measured melting temperaturę for the substance
 
 The app also allows to choose from a list of predefined substances. Add button saves the input. Substance temperatures are possible to look up in the table below the inputs (just choose a substance from the dropdown above the table).
 Update and Remove buttons work after choosing a position from the table.
