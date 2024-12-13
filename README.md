@@ -20,5 +20,5 @@ This apps allows the user to input:
 The app also allows to choose from a list of predefined substances. Add button saves the input. Substance temperatures are possible to look up in the table below the inputs (just choose a substance from the dropdown above the table).
 Update and Remove buttons work after choosing a position from the table.
 The app also calculates linear regression for a substance.
-Entered measured temperaturę values and the regression line are shown in a graph on the right.
+Entered measured temperature values and the regression line are shown in a graph on the right.
 Below the graph is the regression equation and its coefficients.
