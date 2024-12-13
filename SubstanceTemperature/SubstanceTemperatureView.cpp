@@ -3,11 +3,10 @@
 #include "SubstanceTemperatureDoc.h"
 #include "SubstanceTemperatureView.h"
 #include "UpdateSubstanceDialog.h"
+#include "ValidationCheck.h"
+#include "LinearRegression.h"
 
 #include <algorithm>
-
-#include "ValidationCheck.h"
-
 
 
 IMPLEMENT_DYNCREATE(CSubstanceTemperatureView, CView)
@@ -27,9 +26,9 @@ void CSubstanceTemperatureView::OnDraw(CDC* pDC)
 {
     pDC->Rectangle(m_plotRect);
 
-    // Get data to plot
     std::vector<float> tempVector;
     std::vector<int> idVector;
+    LinearRegression regression;
 
     CString selectedSubstanceName;
 
@@ -43,53 +42,95 @@ void CSubstanceTemperatureView::OnDraw(CDC* pDC)
             Substance* foundSubstance = instrument.findSubstance(std::string(CStringA(selectedSubstanceName)));
             if (foundSubstance != nullptr)
             {
-                idVector.push_back(instrument.getId());
-                tempVector.push_back(foundSubstance->getMeasuredTemp());
+                int id = instrument.getId();
+                float temp = foundSubstance->getMeasuredTemp();
+                idVector.push_back(id);
+                tempVector.push_back(temp);
+                regression.addDataPoint(id, temp);
+
             }
         }
     }
 
     if (tempVector.size() > 1)
     {
-        int width = m_plotRect.Width() - 20;
-        int height = m_plotRect.Height() - 20;
-        int startX = m_plotRect.left + 10;
-        int startY = m_plotRect.top + 10;
-
-        double maxTemperature = *std::max_element(tempVector.begin(), tempVector.end());
-        double minTemperature = *std::min_element(tempVector.begin(), tempVector.end());
-
-        double scaleX = (double)width / (tempVector.size() - 1);
-        double scaleY = (double)height / (maxTemperature - minTemperature);
-
-        /*CPen pen(PS_SOLID, 2, RGB(0, 0, 255));
-        CPen* pOldPen = pDC->SelectObject(&pen);*/
+        if (!regression.calculate())
+        {
+            return;
+        }
 
         CPen penDot(PS_SOLID, 1, RGB(255, 0, 0));
         CBrush brushDot(RGB(255, 0, 0));
         CPen* pOldPen = pDC->SelectObject(&penDot);
         CBrush* pOldBrush = pDC->SelectObject(&brushDot);
 
-        const int dotRadius = 4;
+        int plotWidth = m_plotRect.Width();
+        int plotHeight = m_plotRect.Height();
+        int margin = 10;
 
-        for (size_t i = 0; i < tempVector.size(); ++i)
+        int maxX = *std::max_element(idVector.begin(), idVector.end());
+        float maxY = *std::max_element(tempVector.begin(), tempVector.end());
+        int minX = *std::min_element(idVector.begin(), idVector.end());
+        float minY = *std::min_element(tempVector.begin(), tempVector.end());
+
+        float xScale = (plotWidth - 2 * margin) / (maxX - minX);
+        float yScale = (plotHeight - 2 * margin) / (maxY - minY);
+
+        auto MapToPlotX = [&](int x) { return static_cast<int>(m_plotRect.left + margin + (x - minX) * xScale); };
+        auto MapToPlotY = [&](float y) { return static_cast<int>(m_plotRect.bottom - margin - (y - minY) * yScale); };
+
+        for (size_t i = 0; i < idVector.size(); ++i)
         {
-            /*int x1 = startX + (i - 1) * scaleX;
-            int y1 = startY + (maxTemperature - tempVector[i - 1]) * scaleY;
-            int x2 = startX + i * scaleX;
-            int y2 = startY + (maxTemperature - tempVector[i]) * scaleY;
+            int x = MapToPlotX(idVector[i]);
+            int y = MapToPlotY(tempVector[i]);
+            pDC->Ellipse(x - 4, y - 4, x + 4, y + 4);
+        }
 
-            pDC->MoveTo(x1, y1);
-            pDC->LineTo(x2, y2);*/
+        pDC->SelectObject(pOldBrush);
 
-            int x = startX + i * scaleX;
-            int y = startY + (maxTemperature - tempVector[i]) * scaleY;
+        CPen bluePen(PS_SOLID, 2, RGB(0, 0, 255));
+        pOldPen = pDC->SelectObject(&bluePen);
 
-            pDC->Ellipse(x - dotRadius, y - dotRadius, x + dotRadius, y + dotRadius);
+        float yStart, yEnd;
+        regression.predict(minX, yStart);
+        regression.predict(maxX, yEnd);
+
+        int x1 = MapToPlotX(minX);
+        int y1 = MapToPlotY(yStart);
+        int x2 = MapToPlotX(maxX);
+        int y2 = MapToPlotY(yEnd);
+
+        pDC->MoveTo(x1, y1);
+        pDC->LineTo(x2, y2);
+
+        CPen axisPen(PS_SOLID, 1, RGB(0, 0, 0));
+        pOldPen = pDC->SelectObject(&axisPen);
+  
+        // Draw X-axis ticks
+        int numXTicks = 5;
+        for (int i = 0; i <= numXTicks; ++i)
+        {
+            float xVal = minX + i * (maxX - minX) / numXTicks;
+            int x = MapToPlotX(xVal);
+            int yTickStart = m_plotRect.bottom - margin;
+            int yTickEnd = yTickStart + 5;
+            pDC->MoveTo(x, yTickStart);
+            pDC->LineTo(x, yTickEnd);
+        }
+
+        // Draw Y-axis ticks
+        int numYTicks = 5;
+        for (int i = 0; i <= numYTicks; ++i)
+        {
+            float yVal = minY + i * (maxY - minY) / numYTicks;
+            int y = MapToPlotY(yVal);
+            int xTickStart = m_plotRect.left + margin;
+            int xTickEnd = xTickStart - 5;
+            pDC->MoveTo(xTickStart, y);
+            pDC->LineTo(xTickEnd, y);
         }
 
         pDC->SelectObject(pOldPen);
-        pDC->SelectObject(pOldBrush);
     }
 }
 

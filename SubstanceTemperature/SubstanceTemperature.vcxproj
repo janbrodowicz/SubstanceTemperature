@@ -183,6 +183,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="LinearRegression.h" />
     <ClInclude Include="UpdateSubstanceDialog.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="InstrumentsContainer.h" />
@@ -200,6 +201,7 @@
     <ClInclude Include="ValidationCheck.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="LinearRegression.cpp" />
     <ClCompile Include="UpdateSubstanceDialog.cpp" />
     <ClCompile Include="InstrumentsContainer.cpp" />
     <ClCompile Include="MainFrm.cpp" />
