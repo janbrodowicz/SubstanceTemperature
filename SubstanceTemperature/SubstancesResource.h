@@ -4,6 +4,7 @@
 
 #include <vector>
 
+// List of predefined substances that are possible to choose from a dropdown
 const std::vector<Substance> PredefinedSubstances = {
     Substance("H2O", 0.0f),
     Substance("Ga", 29.8f),

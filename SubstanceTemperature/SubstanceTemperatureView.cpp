@@ -79,6 +79,7 @@ void CSubstanceTemperatureView::OnDraw(CDC* pDC)
         auto MapToPlotX = [&](int x) { return static_cast<int>(m_plotRect.left + margin + (x - minX) * xScale); };
         auto MapToPlotY = [&](float y) { return static_cast<int>(m_plotRect.bottom - margin - (y - minY) * yScale); };
 
+        // Draw data point as dots
         for (size_t i = 0; i < idVector.size(); ++i)
         {
             int x = MapToPlotX(idVector[i]);
@@ -88,6 +89,7 @@ void CSubstanceTemperatureView::OnDraw(CDC* pDC)
 
         pDC->SelectObject(pOldBrush);
 
+        // Draw regression line
         CPen bluePen(PS_SOLID, 2, RGB(0, 0, 255));
         pOldPen = pDC->SelectObject(&bluePen);
 
@@ -130,9 +132,7 @@ void CSubstanceTemperatureView::OnDraw(CDC* pDC)
             pDC->LineTo(xTickEnd, y);
         }
 
-        CRect equationRect(m_plotRect.left + 100, m_plotRect.bottom + 10, m_plotRect.right - 100, m_plotRect.bottom + 50);
-        CRect alphaBetaRect(m_plotRect.left + 100, m_plotRect.bottom + 60, m_plotRect.right - 100, m_plotRect.bottom + 100);
-
+        // Draw static text containing equation and alphaBeta 
         CString equation;
         CString alphaBeta;
         float alpha, beta;
@@ -142,12 +142,12 @@ void CSubstanceTemperatureView::OnDraw(CDC* pDC)
         equation.Format(_T("Regression: y = %.2f * x + (%.2f)"), alpha, beta);
         pDC->SetTextColor(RGB(0, 0, 0));
         pDC->SetBkMode(TRANSPARENT);
-        pDC->DrawText(equation, &equationRect, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+        pDC->DrawText(equation, m_equationRect, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
 
         alphaBeta.Format(_T("Alpha: %.2f, Beta: %.2f"), alpha, beta);
         pDC->SetTextColor(RGB(0, 0, 0));
         pDC->SetBkMode(TRANSPARENT);
-        pDC->DrawText(alphaBeta, &alphaBetaRect, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+        pDC->DrawText(alphaBeta, m_alphaBetaRect, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
 
         pDC->SelectObject(pOldPen);
     }
@@ -219,6 +219,11 @@ void CSubstanceTemperatureView::OnInitialUpdate()
 
     // Plot area
     m_plotRect.SetRect(550, 50, 1380, 500);
+
+    // Equation and alphaBeta text
+    m_equationRect.SetRect(m_plotRect.left + 100, m_plotRect.bottom + 10, m_plotRect.right - 100, m_plotRect.bottom + 50);
+
+    m_alphaBetaRect.SetRect(m_plotRect.left + 100, m_plotRect.bottom + 60, m_plotRect.right - 100, m_plotRect.bottom + 100);
 }
 
 BOOL CSubstanceTemperatureView::OnEraseBkgnd(CDC* pDC)
@@ -338,11 +343,8 @@ void CSubstanceTemperatureView::OnAddSubstance()
 
     InvalidateRect(m_plotRect, FALSE);
 
-    CRect equationRect(m_plotRect.left + 100, m_plotRect.bottom + 10, m_plotRect.right - 100, m_plotRect.bottom + 50);
-    CRect alphaBetaRect(m_plotRect.left + 100, m_plotRect.bottom + 60, m_plotRect.right - 100, m_plotRect.bottom + 100);
-
-    InvalidateRect(equationRect, TRUE);
-    InvalidateRect(alphaBetaRect, TRUE);
+    InvalidateRect(m_equationRect, TRUE);
+    InvalidateRect(m_alphaBetaRect, TRUE);
 
     UpdateWindow();
 }
@@ -467,6 +469,9 @@ void CSubstanceTemperatureView::OnCbnSelchangeSubstanceListCombo()
 
     InvalidateRect(m_plotRect, FALSE);
 
+    InvalidateRect(m_equationRect, TRUE);
+    InvalidateRect(m_alphaBetaRect, TRUE);
+
     UpdateWindow();
 }
 
@@ -509,7 +514,6 @@ void CSubstanceTemperatureView::OnUpdateSubstance()
 
     if (dlg.DoModal() == IDOK)
     {
-        // Get the updated values from the dialog
         float measuredTemperature = dlg.m_measuredTemperature;
 
         std::string substanceNameStr = std::string(CStringA(selectedSubstanceName));
@@ -526,6 +530,9 @@ void CSubstanceTemperatureView::OnUpdateSubstance()
     RefreshSubstanceTable();
 
     InvalidateRect(m_plotRect, FALSE);
+
+    InvalidateRect(m_equationRect, TRUE);
+    InvalidateRect(m_alphaBetaRect, TRUE);
 
     UpdateWindow();
 }
@@ -582,6 +589,9 @@ void CSubstanceTemperatureView::OnRemoveSubstance()
     RefreshInstrumentIdCombo();
 
     InvalidateRect(m_plotRect, FALSE);
+
+    InvalidateRect(m_equationRect, TRUE);
+    InvalidateRect(m_alphaBetaRect, TRUE);
 
     UpdateWindow();
 }

@@ -39,6 +39,8 @@ protected:
 
 	// Plot area
 	CRect m_plotRect;
+	CRect m_equationRect;
+	CRect m_alphaBetaRect;
 
 	// List of instruments and their Substances
 	InstrumentsContainer m_instruments;
@@ -47,37 +49,77 @@ protected:
 	SubstanceNamesContainer m_substancesNames;
 
 public:
-	// Dynamic app behaviour
+	
+	/*
+		Method used for drawing the plot and generating equation and alhpaBeta texts
+	*/
 	virtual void OnDraw(CDC* pDC);
 
-	// Initial app view
+	/*
+		Method which sets the initial app interface
+	*/
 	virtual void OnInitialUpdate();
 	
 protected:
-	// Changing background color
+	
+	/*
+		Method used to set app's background color
+	*/
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 
-	// Making Add button react to Enter key
+	/*
+		Method to makie Add button react to Enter key
+	*/
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
-	// Callbacks
+	/*
+		Callback from Add button
+	*/
 	afx_msg void OnAddSubstance();
+
+	/*
+		Callback from predefined substances dropdown
+	*/
 	afx_msg void OnCbnSelchangeSubstanceCombo();
+
+	/*
+		Callback from substances for list dropdown
+	*/
 	afx_msg void OnCbnSelchangeSubstanceListCombo();
+
+	/*
+		Callback from instrument id's dropdown
+	*/
 	afx_msg void OnCbnSelchangeInstrumentIdCombo();
+
+	/*
+		Callback from Update button
+	*/
 	afx_msg void OnUpdateSubstance();
+
+	/*
+		Callback from Remove button
+	*/
 	afx_msg void OnRemoveSubstance();
 
-	// Refresh table
+	/*
+		Method to refresh the substances table
+	*/
 	void RefreshSubstanceTable();
 
-	// Refresh substance for table dropdown
+	/*
+		Method to refresh a dropdown holding substances to display in table and on plot
+	*/
 	void RefreshSubstanceListCombo();
 
-	// Refresh instrument ids dropdown
+	/*
+		Method to refresh instrument id's dropdown
+	*/
 	void RefreshInstrumentIdCombo();
 
-	// Get instrumant id and substance name from table (on select)
+	/*
+		Method to get instrumant id and substance name from table (on select)
+	*/
 	bool GetSubstanceListElement(int& instrumentId, CString& selectedSubstanceName);
 
 	DECLARE_MESSAGE_MAP()
